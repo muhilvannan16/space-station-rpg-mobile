@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.buildozer/
+bin/
+save/savegame.json
+*.egg-info/
+dist/
+build/
+.idea/
+.vscode/

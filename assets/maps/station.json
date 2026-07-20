@@ -1,0 +1,30 @@
+{
+  "rows": [
+    "########################################",
+    "#........O.............#............P..#",
+    "#......................#.P.............#",
+    "#O.....................+...............#",
+    "#......................#..............P#",
+    "#....................P.#....O.........X#",
+    "########################################"
+  ],
+  "items": [
+    {"type": "potion", "name": "Medkit", "rarity": "common", "value": 10, "heal_amount": 25, "y": 2, "x": 5},
+    {"type": "weapon", "name": "Plasma Cutter", "rarity": "rare", "value": 50, "damage": 15, "y": 4, "x": 30},
+    {"type": "armor", "name": "Reinforced Vest", "rarity": "common", "value": 20, "defense": 5, "y": 1, "x": 38},
+    {"type": "potion", "name": "Stim Pack", "rarity": "common", "value": 5, "heal_amount": 15, "y": 4, "x": 15},
+    {"type": "potion", "name": "Nano-Repair Kit", "rarity": "rare", "value": 40, "heal_amount": 50, "y": 2, "x": 32},
+    {"type": "weapon", "name": "Ion Blaster", "rarity": "rare", "value": 60, "damage": 20, "y": 3, "x": 35},
+    {"type": "weapon", "name": "Emergency Wrench", "rarity": "common", "value": 8, "damage": 6, "y": 2, "x": 10},
+    {"type": "armor", "name": "Shield Generator", "rarity": "rare", "value": 55, "defense": 10, "y": 5, "x": 30},
+    {"type": "key", "name": "Keycard", "rarity": "common", "value": 0, "y": 1, "x": 18}
+  ],
+  "enemies": [
+    {"name": "Rogue Drone", "health": 30, "damage": 10, "y": 2, "x": 15},
+    {"name": "Mutant Rat", "health": 20, "damage": 8, "y": 4, "x": 8},
+    {"name": "Alien Creature", "health": 40, "damage": 12, "y": 3, "x": 12},
+    {"name": "Sentry Turret", "health": 50, "damage": 15, "y": 1, "x": 30},
+    {"name": "Rogue AI Drone", "health": 35, "damage": 11, "y": 1, "x": 5},
+    {"name": "Void Wraith", "health": 60, "damage": 18, "y": 4, "x": 35}
+  ]
+}

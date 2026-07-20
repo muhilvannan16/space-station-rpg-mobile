@@ -1,0 +1,314 @@
+# =============================================================================
+# Space Station RPG – Kivy Layout
+# =============================================================================
+
+# --- Title Screen ---
+<TitleScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 20
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.12, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Widget:
+            size_hint_y: 0.15
+
+        Label:
+            text: 'SPACE STATION RPG'
+            font_size: '36sp'
+            bold: True
+            color: 0, 1, 1, 1
+            size_hint_y: 0.15
+
+        Label:
+            text: 'Survive. Explore. Escape.'
+            font_size: '16sp'
+            color: 0.6, 0.6, 0.6, 1
+            size_hint_y: 0.08
+
+        Widget:
+            size_hint_y: 0.1
+
+        Button:
+            text: 'Continue'
+            font_size: '20sp'
+            size_hint: 0.5, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            opacity: 1 if root.has_save else 0
+            disabled: not root.has_save
+            on_press: root.continue_game()
+
+        Button:
+            text: 'New Game'
+            font_size: '20sp'
+            size_hint: 0.5, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            on_press: root.new_game()
+
+        Widget:
+            size_hint_y: 0.15
+
+        Label:
+            text: 'Arrow keys / D-pad: Move  |  Tap Save to save'
+            font_size: '12sp'
+            color: 0.5, 0.5, 0.5, 1
+            size_hint_y: 0.05
+
+
+# --- Game Screen ---
+<GameScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # HUD bar
+        BoxLayout:
+            size_hint_y: 0.07
+            padding: 10, 0
+            spacing: 10
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.1, 0.15, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: f'O2: {root.oxygen}'
+                font_size: '14sp'
+                color: 0.3, 0.6, 1, 1
+                bold: True
+            Label:
+                text: f'PWR: {root.power}'
+                font_size: '14sp'
+                color: 1, 1, 0, 1
+                bold: True
+            Label:
+                text: f'HP: {root.health}'
+                font_size: '14sp'
+                color: 1, 0.3, 0.3, 1
+                bold: True
+            Button:
+                text: 'Save'
+                font_size: '12sp'
+                size_hint_x: 0.25
+                on_press: root.do_save()
+
+        # Map container
+        BoxLayout:
+            id: map_container
+            size_hint_y: 0.58
+
+        # Message area
+        Label:
+            size_hint_y: 0.07
+            text: root.message
+            font_size: '13sp'
+            color: 1, 1, 1, 1
+            canvas.before:
+                Color:
+                    rgba: 0.08, 0.08, 0.12, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # D-pad controls
+        BoxLayout:
+            size_hint_y: 0.28
+            orientation: 'vertical'
+            padding: 10
+            spacing: 5
+            canvas.before:
+                Color:
+                    rgba: 0.06, 0.06, 0.1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            # Up row
+            BoxLayout:
+                Widget:
+                Button:
+                    text: '^'
+                    font_size: '24sp'
+                    size_hint_x: 0.33
+                    on_press: root.move_player(0, -1)
+                Widget:
+
+            # Middle row: Left, blank, Right
+            BoxLayout:
+                Button:
+                    text: '<'
+                    font_size: '24sp'
+                    on_press: root.move_player(-1, 0)
+                Widget:
+                    size_hint_x: 0.33
+                Button:
+                    text: '>'
+                    font_size: '24sp'
+                    on_press: root.move_player(1, 0)
+
+            # Down row
+            BoxLayout:
+                Widget:
+                Button:
+                    text: 'v'
+                    font_size: '24sp'
+                    size_hint_x: 0.33
+                    on_press: root.move_player(0, 1)
+                Widget:
+
+
+# --- Combat Screen ---
+<CombatScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 30
+        spacing: 15
+        canvas.before:
+            Color:
+                rgba: 0.1, 0.02, 0.02, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: f'⚔  {root.enemy_name}'
+            font_size: '28sp'
+            bold: True
+            color: 1, 0.3, 0.3, 1
+            size_hint_y: 0.12
+
+        BoxLayout:
+            size_hint_y: 0.12
+            spacing: 20
+            Label:
+                text: f'Your HP: {root.player_hp}'
+                font_size: '18sp'
+                color: 0, 1, 1, 1
+            Label:
+                text: f'Enemy HP: {root.enemy_hp}'
+                font_size: '18sp'
+                color: 1, 0.4, 0.4, 1
+
+        Label:
+            text: root.message
+            font_size: '14sp'
+            color: 1, 1, 1, 1
+            size_hint_y: 0.15
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+
+        Widget:
+            size_hint_y: 0.2
+
+        Button:
+            text: f'Attack (dmg: {root.weapon_damage})'
+            font_size: '18sp'
+            size_hint: 0.7, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            on_press: root.attack()
+
+        Button:
+            text: 'Run Away'
+            font_size: '18sp'
+            size_hint: 0.7, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            on_press: root.run_away()
+
+        Widget:
+            size_hint_y: 0.15
+
+
+# --- Hazard Event Screen ---
+<EventScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 30
+        spacing: 15
+        canvas.before:
+            Color:
+                rgba: 0.12, 0.08, 0.0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Label:
+            text: '⚠  HAZARD!'
+            font_size: '28sp'
+            bold: True
+            color: 1, 0.8, 0, 1
+            size_hint_y: 0.1
+
+        Label:
+            text: root.description
+            font_size: '15sp'
+            color: 1, 1, 1, 1
+            size_hint_y: 0.3
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+
+        BoxLayout:
+            id: choice_buttons
+            orientation: 'vertical'
+            spacing: 10
+            size_hint_y: 0.4
+
+        Widget:
+            size_hint_y: 0.2
+
+
+# --- End Screen ---
+<EndScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 40
+        spacing: 20
+        canvas.before:
+            Color:
+                rgba: 0.05, 0.05, 0.12, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        Widget:
+            size_hint_y: 0.25
+
+        Label:
+            text: root.result
+            font_size: '24sp'
+            bold: True
+            color: 1, 1, 1, 1
+            size_hint_y: 0.2
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+
+        Widget:
+            size_hint_y: 0.15
+
+        Button:
+            text: 'Back to Title'
+            font_size: '20sp'
+            size_hint: 0.5, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            on_press: root.manager.current = 'title'
+
+        Widget:
+            size_hint_y: 0.3

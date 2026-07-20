@@ -1,0 +1,89 @@
+from kivy.uix.screenmanager import Screen
+from kivy.properties import StringProperty, NumericProperty
+from kivy.clock import Clock
+
+from core.combat import get_weapon_damage, get_armor_defense, calc_damage
+from core.sounds import play_sound
+
+
+class CombatScreen(Screen):
+    enemy_name = StringProperty('')
+    enemy_hp = NumericProperty(0)
+    player_hp = NumericProperty(0)
+    weapon_damage = NumericProperty(5)
+    defense = NumericProperty(0)
+    message = StringProperty('')
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.enemy = None
+        self.enemy_pos = None
+
+    def setup(self, enemy, pos):
+        self.enemy = enemy
+        self.enemy_pos = pos
+        self.enemy_killed = False
+
+    def on_enter(self, *args):
+        gs = self.manager.app.game_state
+        self.enemy_name = self.enemy.name
+        self.enemy_hp = self.enemy.health
+        self.player_hp = gs.health
+        self.weapon_damage = get_weapon_damage(gs.inventory)
+        self.defense = get_armor_defense(gs.inventory)
+        self.message = f'A {self.enemy.name} attacks you!'
+
+    def attack(self):
+        gs = self.manager.app.game_state
+
+        # Player attacks
+        play_sound('attack')
+        self.enemy.health -= self.weapon_damage
+        self.enemy_hp = self.enemy.health
+        self.message = f'You deal {self.weapon_damage} damage!'
+
+        if self.enemy.health <= 0:
+            self.message = f'You defeated the {self.enemy.name}!'
+            del gs.active_enemies[self.enemy_pos]
+            gs.killed_enemies.append(list(self.enemy_pos))
+            gs.message = f'Defeated the {self.enemy.name}!'
+            self.enemy_killed = True
+            Clock.schedule_once(self._return_to_game, 1.0)
+            return
+
+        # Enemy attacks back
+        actual = calc_damage(self.enemy.damage, self.defense)
+        gs.health -= actual
+        self.player_hp = gs.health
+        play_sound('hit')
+        self.message += f'  {self.enemy.name} hits for {actual}!'
+
+        if gs.health <= 0:
+            gs.message = 'You died!'
+            Clock.schedule_once(self._game_over, 1.0)
+
+    def run_away(self):
+        gs = self.manager.app.game_state
+        actual = calc_damage(self.enemy.damage, self.defense)
+        gs.health -= actual
+        self.player_hp = gs.health
+        play_sound('hit')
+        gs.message = f'Fled from the {self.enemy.name}!'
+
+        if gs.health <= 0:
+            Clock.schedule_once(self._game_over, 0.5)
+        else:
+            self._return_to_game()
+
+    def _return_to_game(self, *args):
+        if self.enemy_killed:
+            # Move player onto the defeated enemy's tile (matches terminal behavior)
+            gs = self.manager.app.game_state
+            gs.player_y, gs.player_x = self.enemy_pos
+        self.manager.current = 'game'
+
+    def _game_over(self, *args):
+        play_sound('lose')
+        end = self.manager.get_screen('end')
+        end.result = 'GAME OVER: You were killed.'
+        self.manager.current = 'end'
