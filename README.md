@@ -54,4 +54,10 @@ Built by [muhilvannan16](https://github.com/muhilvannan16).
 
 ## License
 
-This project is licensed under the Apache 2.0 License.
+All Rights Reserved.
+
+Copyright © 2026 Muhil Vannan. All rights reserved.
+
+This source code is made available for viewing purposes only. No part of
+this software may be copied, modified, distributed, or used in any form
+without explicit written permission from the copyright holder.
