@@ -10,6 +10,7 @@ from screens.title_screen import TitleScreen
 from screens.game_screen import GameScreen
 from screens.combat_screen import CombatScreen
 from screens.event_screen import EventScreen, EndScreen
+from screens.tutorial_screen import TutorialScreen
 
 # Auto-generate placeholder sprites if missing
 _sprite_dir = os.path.join(os.path.dirname(__file__), 'assets', 'sprites')
@@ -40,6 +41,7 @@ class SpaceStationApp(App):
         sm.add_widget(CombatScreen(name='combat'))
         sm.add_widget(EventScreen(name='event'))
         sm.add_widget(EndScreen(name='end'))
+        sm.add_widget(TutorialScreen(name='tutorial'))
 
         return sm
 

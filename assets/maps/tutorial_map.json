@@ -1,0 +1,18 @@
+{
+  "rows": [
+    "##############",
+    "#...O.P..+..X#",
+    "########.#####",
+    "##############",
+    "##############",
+    "##############",
+    "##############"
+  ],
+  "items": [
+    {"type": "potion", "name": "Tutorial Medkit", "rarity": "common", "value": 10, "heal_amount": 25, "y": 1, "x": 2},
+    {"type": "key", "name": "Keycard", "rarity": "common", "value": 0, "y": 2, "x": 8}
+  ],
+  "enemies": [
+    {"name": "Training Dummy", "health": 10, "damage": 3, "y": 1, "x": 10}
+  ]
+}

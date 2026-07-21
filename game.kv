@@ -52,6 +52,14 @@
             pos_hint: {'center_x': 0.5}
             on_press: root.new_game()
 
+        Button:
+            text: 'Tutorial'
+            font_size: '20sp'
+            size_hint: 0.5, None
+            height: 55
+            pos_hint: {'center_x': 0.5}
+            on_press: root.start_tutorial()
+
         Widget:
             size_hint_y: 0.15
 
@@ -312,3 +320,101 @@
 
         Widget:
             size_hint_y: 0.3
+
+
+# --- Tutorial Screen ---
+<TutorialScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        canvas.before:
+            Color:
+                rgba: 0, 0, 0, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
+        # Instruction banner + Skip button
+        BoxLayout:
+            size_hint_y: 0.09
+            padding: 10, 0
+            spacing: 10
+            canvas.before:
+                Color:
+                    rgba: 0.08, 0.15, 0.08, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+            Label:
+                text: root.instruction
+                font_size: '13sp'
+                color: 0.2, 1, 0.4, 1
+                bold: True
+                text_size: self.size
+                halign: 'left'
+                valign: 'middle'
+            Button:
+                text: 'Skip'
+                font_size: '12sp'
+                size_hint_x: 0.2
+                on_press: root.skip_tutorial()
+
+        # Map container
+        BoxLayout:
+            id: tut_map_container
+            size_hint_y: 0.58
+
+        # Message area
+        Label:
+            size_hint_y: 0.07
+            text: root.message
+            font_size: '13sp'
+            color: 1, 1, 1, 1
+            canvas.before:
+                Color:
+                    rgba: 0.08, 0.08, 0.12, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+        # D-pad controls
+        BoxLayout:
+            size_hint_y: 0.26
+            orientation: 'vertical'
+            padding: 10
+            spacing: 5
+            canvas.before:
+                Color:
+                    rgba: 0.06, 0.06, 0.1, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
+            BoxLayout:
+                Widget:
+                Button:
+                    text: '^'
+                    font_size: '24sp'
+                    size_hint_x: 0.33
+                    on_press: root.move_player(0, -1)
+                Widget:
+
+            BoxLayout:
+                Button:
+                    text: '<'
+                    font_size: '24sp'
+                    on_press: root.move_player(-1, 0)
+                Widget:
+                    size_hint_x: 0.33
+                Button:
+                    text: '>'
+                    font_size: '24sp'
+                    on_press: root.move_player(1, 0)
+
+            BoxLayout:
+                Widget:
+                Button:
+                    text: 'v'
+                    font_size: '24sp'
+                    size_hint_x: 0.33
+                    on_press: root.move_player(0, 1)
+                Widget:

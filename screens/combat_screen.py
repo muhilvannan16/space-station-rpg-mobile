@@ -19,13 +19,15 @@ class CombatScreen(Screen):
         self.enemy = None
         self.enemy_pos = None
 
-    def setup(self, enemy, pos):
+    def setup(self, enemy, pos, game_state=None, return_screen='game'):
         self.enemy = enemy
         self.enemy_pos = pos
         self.enemy_killed = False
+        self._gs = game_state or self.manager.app.game_state
+        self._return_screen = return_screen
 
     def on_enter(self, *args):
-        gs = self.manager.app.game_state
+        gs = self._gs
         self.enemy_name = self.enemy.name
         self.enemy_hp = self.enemy.health
         self.player_hp = gs.health
@@ -34,7 +36,7 @@ class CombatScreen(Screen):
         self.message = f'A {self.enemy.name} attacks you!'
 
     def attack(self):
-        gs = self.manager.app.game_state
+        gs = self._gs
 
         # Player attacks
         play_sound('attack')
@@ -63,7 +65,7 @@ class CombatScreen(Screen):
             Clock.schedule_once(self._game_over, 1.0)
 
     def run_away(self):
-        gs = self.manager.app.game_state
+        gs = self._gs
         actual = calc_damage(self.enemy.damage, self.defense)
         gs.health -= actual
         self.player_hp = gs.health
@@ -77,10 +79,9 @@ class CombatScreen(Screen):
 
     def _return_to_game(self, *args):
         if self.enemy_killed:
-            # Move player onto the defeated enemy's tile (matches terminal behavior)
-            gs = self.manager.app.game_state
+            gs = self._gs
             gs.player_y, gs.player_x = self.enemy_pos
-        self.manager.current = 'game'
+        self.manager.current = self._return_screen
 
     def _game_over(self, *args):
         play_sound('lose')

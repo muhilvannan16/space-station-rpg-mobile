@@ -23,3 +23,8 @@ class TitleScreen(Screen):
         app.init_map()
         app.game_state.load_game()
         self.manager.current = 'game'
+
+    def start_tutorial(self):
+        tut = self.manager.get_screen('tutorial')
+        tut._gs = None  # force fresh tutorial state
+        self.manager.current = 'tutorial'
