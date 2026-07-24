@@ -8,6 +8,41 @@ from kivy.utils import platform
 from pygamelogic import InventorySystem, Potion, Weapon, Armor
 
 
+def _item_to_dict(item):
+    """Serialize an inventory item to a JSON-safe dict."""
+    if isinstance(item, Potion):
+        return {'item_type': 'potion', 'name': item.name, 'rarity': item.rarity,
+                'value': item.value, 'heal_amount': item.heal_amount,
+                'quantity': item.quantity}
+    if isinstance(item, Weapon):
+        return {'item_type': 'weapon', 'name': item.name, 'rarity': item.rarity,
+                'value': item.value, 'damage': item.damage}
+    if isinstance(item, Armor):
+        return {'item_type': 'armor', 'name': item.name, 'rarity': item.rarity,
+                'value': item.value, 'defense': item.defense}
+    from core.map_loader import KeyItem
+    if isinstance(item, KeyItem):
+        return {'item_type': 'key', 'name': item.name, 'rarity': item.rarity,
+                'value': item.value}
+    return None
+
+
+def _item_from_dict(spec):
+    """Reconstruct an inventory item from a serialized dict."""
+    from core.map_loader import KeyItem
+    t = spec['item_type']
+    if t == 'potion':
+        return Potion(spec['name'], spec['rarity'], spec['value'],
+                      spec['heal_amount'], quantity=spec.get('quantity', 1))
+    if t == 'weapon':
+        return Weapon(spec['name'], spec['rarity'], spec['value'], spec['damage'])
+    if t == 'armor':
+        return Armor(spec['name'], spec['rarity'], spec['value'], spec['defense'])
+    if t == 'key':
+        return KeyItem(spec['name'], spec.get('rarity', 'common'), spec.get('value', 0))
+    return None
+
+
 class Enemy:
     def __init__(self, name, health, damage):
         self.name = name
@@ -66,6 +101,7 @@ class GameState(EventDispatcher):
             'health': self.health,
             'picked_up_items': self.picked_up_items,
             'killed_enemies': self.killed_enemies,
+            'inventory': [d for d in (_item_to_dict(i) for i in self.inventory.get_items()) if d is not None],
         }
         with open(path, 'w') as f:
             json.dump(data, f)
@@ -82,6 +118,12 @@ class GameState(EventDispatcher):
         self.power = data['power']
         self.step_count = data['step_count']
         self.health = data['health']
+        # Restore inventory
+        self.inventory = InventorySystem(capacity=10)
+        for spec in data.get('inventory', []):
+            item = _item_from_dict(spec)
+            if item is not None:
+                self.inventory.add_item(item)
         # Remove already-picked-up items
         for pos in data.get('picked_up_items', []):
             key = (pos[0], pos[1])

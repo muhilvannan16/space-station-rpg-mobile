@@ -60,6 +60,11 @@ class InventoryPopup(Popup):
     pass
 
 
+class ExitConfirmPopup(Popup):
+    """Confirmation popup declared in game.kv."""
+    pass
+
+
 class GameScreen(Screen):
     oxygen = NumericProperty(100)
     power = NumericProperty(100)
@@ -341,6 +346,17 @@ class GameScreen(Screen):
 
         self._sync_hud()
         self._populate_inventory(popup)
+
+    def open_exit_confirm(self):
+        popup = ExitConfirmPopup()
+        popup.ids.confirm_btn.bind(on_press=lambda inst: self.confirm_exit(popup))
+        popup.ids.cancel_btn.bind(on_press=lambda inst: popup.dismiss())
+        popup.open()
+
+    def confirm_exit(self, popup):
+        self._gs.save_game()
+        popup.dismiss()
+        self.manager.current = 'title'
 
     def do_save(self):
         gs = self._gs

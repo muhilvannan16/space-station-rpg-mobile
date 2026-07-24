@@ -117,6 +117,11 @@
                 font_size: '12sp'
                 size_hint_x: 0.25
                 on_press: root.do_save()
+            Button:
+                text: 'Exit'
+                font_size: '12sp'
+                size_hint_x: 0.25
+                on_press: root.open_exit_confirm()
 
         # Map container
         BoxLayout:
@@ -185,63 +190,73 @@
 
 # --- Combat Screen ---
 <CombatScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        padding: 30
-        spacing: 15
-        canvas.before:
-            Color:
-                rgba: 0.1, 0.02, 0.02, 1
-            Rectangle:
-                pos: self.pos
-                size: self.size
-
-        Label:
-            text: f'⚔  {root.enemy_name}'
-            font_size: '28sp'
-            bold: True
-            color: 1, 0.3, 0.3, 1
-            size_hint_y: 0.12
+    FloatLayout:
+        size_hint: 1, 1
 
         BoxLayout:
-            size_hint_y: 0.12
-            spacing: 20
+            orientation: 'vertical'
+            padding: 30
+            spacing: 15
+            size_hint: 1, 1
+            canvas.before:
+                Color:
+                    rgba: 0.1, 0.02, 0.02, 1
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+
             Label:
-                text: f'Your HP: {root.player_hp}'
-                font_size: '18sp'
-                color: 0, 1, 1, 1
+                text: f'⚔  {root.enemy_name}'
+                font_size: '28sp'
+                bold: True
+                color: 1, 0.3, 0.3, 1
+                size_hint_y: 0.12
+
+            BoxLayout:
+                size_hint_y: 0.12
+                spacing: 20
+                Label:
+                    id: player_hp_label
+                    text: f'Your HP: {root.player_hp}'
+                    font_size: '18sp'
+                    color: 0, 1, 1, 1
+                Label:
+                    id: enemy_hp_label
+                    text: f'Enemy HP: {root.enemy_hp}'
+                    font_size: '18sp'
+                    color: 1, 0.4, 0.4, 1
+
             Label:
-                text: f'Enemy HP: {root.enemy_hp}'
+                text: root.message
+                font_size: '14sp'
+                color: 1, 1, 1, 1
+                size_hint_y: 0.15
+                text_size: self.size
+                halign: 'center'
+                valign: 'middle'
+
+            Widget:
+                size_hint_y: 0.2
+
+            Button:
+                text: f'Attack (dmg: {root.weapon_damage})'
                 font_size: '18sp'
-                color: 1, 0.4, 0.4, 1
+                size_hint: 0.7, None
+                height: 55
+                pos_hint: {'center_x': 0.5}
+                on_press: root.attack()
 
-        Label:
-            text: root.message
-            font_size: '14sp'
-            color: 1, 1, 1, 1
-            size_hint_y: 0.15
-            text_size: self.size
-            halign: 'center'
-            valign: 'middle'
+            Button:
+                text: 'Run Away'
+                font_size: '18sp'
+                size_hint: 0.7, None
+                height: 55
+                pos_hint: {'center_x': 0.5}
+                on_press: root.run_away()
 
-        Widget:
-            size_hint_y: 0.2
-
-        Button:
-            text: f'Attack (dmg: {root.weapon_damage})'
-            font_size: '18sp'
-            size_hint: 0.7, None
-            height: 55
-            pos_hint: {'center_x': 0.5}
-            on_press: root.attack()
-
-        Button:
-            text: 'Run Away'
-            font_size: '18sp'
-            size_hint: 0.7, None
-            height: 55
-            pos_hint: {'center_x': 0.5}
-            on_press: root.run_away()
+        FloatLayout:
+            id: fx_layer
+            size_hint: 1, 1
 
         Widget:
             size_hint_y: 0.15
@@ -356,6 +371,43 @@
             size_hint_y: None
             height: 45
             on_press: root.dismiss()
+
+
+# --- Exit Confirm Popup ---
+<ExitConfirmPopup>:
+    title: 'Exit to Menu'
+    title_color: 0, 1, 1, 1
+    title_size: '18sp'
+    size_hint: 0.75, 0.4
+    separator_color: 0, 1, 1, 1
+    background_color: 0.08, 0.08, 0.15, 1
+
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: 15
+        padding: 15
+
+        Label:
+            text: 'Exit to the main menu? Your progress will be saved automatically.'
+            font_size: '14sp'
+            color: 1, 1, 1, 1
+            text_size: self.size
+            halign: 'center'
+            valign: 'middle'
+            size_hint_y: 0.5
+
+        BoxLayout:
+            spacing: 15
+            size_hint_y: None
+            height: 50
+            Button:
+                id: confirm_btn
+                text: 'Confirm Exit'
+                font_size: '14sp'
+            Button:
+                id: cancel_btn
+                text: 'Cancel'
+                font_size: '14sp'
 
 
 # --- Tutorial Screen ---

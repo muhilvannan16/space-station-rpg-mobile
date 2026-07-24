@@ -1,6 +1,8 @@
 from kivy.uix.screenmanager import Screen
+from kivy.uix.label import Label
 from kivy.properties import StringProperty, NumericProperty
 from kivy.clock import Clock
+from kivy.animation import Animation
 
 from core.combat import get_weapon_damage, get_armor_defense, calc_damage
 from core.sounds import play_sound
@@ -47,6 +49,8 @@ class CombatScreen(Screen):
         play_sound('attack')
         self.enemy.health -= self.weapon_damage
         self.enemy_hp = max(0, self.enemy.health)
+        self._spawn_damage_number(f'-{self.weapon_damage}', 0.75, 0.8)
+        self._flash(self.ids.enemy_hp_label)
         self.message = f'You deal {self.weapon_damage} damage!'
 
         if self.enemy.health <= 0:
@@ -63,6 +67,8 @@ class CombatScreen(Screen):
         actual = calc_damage(self.enemy.damage, self.defense)
         gs.health -= actual
         self.player_hp = max(0, gs.health)
+        self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
+        self._flash(self.ids.player_hp_label)
         play_sound('hit')
         self.message += f'  {self.enemy.name} hits for {actual}!'
 
@@ -79,6 +85,8 @@ class CombatScreen(Screen):
         actual = calc_damage(self.enemy.damage, self.defense)
         gs.health -= actual
         self.player_hp = max(0, gs.health)
+        self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
+        self._flash(self.ids.player_hp_label)
         play_sound('hit')
         gs.message = f'Fled from the {self.enemy.name}!'
 
@@ -99,3 +107,30 @@ class CombatScreen(Screen):
         end = self.manager.get_screen('end')
         end.result = 'GAME OVER: You were killed.'
         self.manager.current = 'end'
+
+    # ------------------------------------------------------------------
+    # Visual feedback helpers
+    # ------------------------------------------------------------------
+    def _spawn_damage_number(self, text, x_frac, y_frac, color=(1, 0.2, 0.2, 1)):
+        fx = self.ids.fx_layer
+        lbl = Label(
+            text=text,
+            color=color,
+            bold=True,
+            font_size='20sp',
+            size_hint=(None, None),
+            size=(100, 30),
+        )
+        lbl.pos = (fx.width * x_frac - 50, fx.height * y_frac - 15)
+        fx.add_widget(lbl)
+        anim = Animation(y=lbl.y + 60, opacity=0, duration=0.9)
+        anim.bind(on_complete=lambda *args: fx.remove_widget(lbl))
+        anim.start(lbl)
+
+    def _flash(self, widget):
+        original_color = list(widget.color)
+        anim = (
+            Animation(color=(1, 1, 1, 1), duration=0.08)
+            + Animation(color=original_color, duration=0.2)
+        )
+        anim.start(widget)
