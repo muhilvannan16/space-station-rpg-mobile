@@ -55,6 +55,12 @@ jobs:
       - name: Build with Buildozer
         run: buildozer android debug
 
+      - name: Check keystore state after build
+        run: |
+          echo "Post-build keystore state:"
+          ls -la ~/.android/debug.keystore || echo "FILE MISSING"
+          md5sum ~/.android/debug.keystore || true
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
