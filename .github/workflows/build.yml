@@ -40,10 +40,13 @@ jobs:
             buildozer-
 
       - name: Restore debug keystore
-        if: ${{ secrets.DEBUG_KEYSTORE_B64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_B64 }}
         run: |
           mkdir -p ~/.android
-          echo "${{ secrets.DEBUG_KEYSTORE_B64 }}" | base64 -d > ~/.android/debug.keystore
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          fi
 
       - name: Build with Buildozer
         run: buildozer android debug
