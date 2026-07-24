@@ -46,6 +46,10 @@ jobs:
           mkdir -p ~/.android
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+            echo "Keystore restored:"
+            ls -la ~/.android/debug.keystore
+          else
+            echo "WARNING: DEBUG_KEYSTORE_B64 secret is empty or not set!"
           fi
 
       - name: Build with Buildozer
