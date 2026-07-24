@@ -2,8 +2,13 @@ import random
 from kivy.uix.screenmanager import Screen
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
+from kivy.uix.popup import Popup
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
+from kivy.uix.button import Button
 from kivy.properties import NumericProperty, StringProperty
 from kivy.clock import Clock
+from pygamelogic import Potion, Weapon, Armor
 
 from core.combat import get_weapon_damage, get_armor_defense
 from core.events import HAZARD_EVENTS
@@ -48,6 +53,11 @@ class MapGrid(GridLayout):
         if key in self.tile_widgets:
             self.tile_widgets[key].source = sprite_path
             self.tile_widgets[key].reload()
+
+
+class InventoryPopup(Popup):
+    """Popup declared in game.kv; item rows are built in Python."""
+    pass
 
 
 class GameScreen(Screen):
@@ -233,6 +243,104 @@ class GameScreen(Screen):
         self.power = gs.power
         self.health = gs.health
         self.message = gs.message
+
+    def open_inventory(self):
+        gs = self._gs
+        if gs is None:
+            return
+        popup = InventoryPopup()
+        self._populate_inventory(popup)
+        popup.open()
+
+    def _populate_inventory(self, popup):
+        item_list = popup.ids.get('item_list')
+        if item_list is None:
+            return
+        item_list.clear_widgets()
+
+        items = gs_items = self._gs.inventory.get_items()
+        if not items:
+            lbl = Label(
+                text='Inventory is empty.',
+                font_size='14sp',
+                color=(0.5, 0.5, 0.5, 1),
+                size_hint_y=None,
+                height=40,
+            )
+            item_list.add_widget(lbl)
+            return
+
+        for item in items:
+            row = BoxLayout(
+                orientation='horizontal',
+                size_hint_y=None,
+                height=50,
+                spacing=10,
+            )
+
+            # Build description based on item type
+            if isinstance(item, Potion):
+                desc = f'{item.name}  —  Potion, heals: {item.heal_amount}'
+            elif isinstance(item, Weapon):
+                desc = f'{item.name}  —  Weapon, damage: {item.damage}'
+            elif isinstance(item, Armor):
+                desc = f'{item.name}  —  Armor, defense: {item.defense}'
+            else:
+                desc = f'{item.name}  —  Key item'
+
+            lbl = Label(
+                text=desc,
+                font_size='13sp',
+                color=(1, 1, 1, 1),
+                halign='left',
+                valign='middle',
+                text_size=(None, None),
+            )
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            row.add_widget(lbl)
+
+            if isinstance(item, Potion):
+                btn = Button(
+                    text='Use',
+                    font_size='13sp',
+                    size_hint_x=0.25,
+                    bold=True,
+                )
+                btn.bind(on_press=lambda inst, p=item, pop=popup: self.use_potion(p, pop))
+                row.add_widget(btn)
+
+            item_list.add_widget(row)
+
+    def use_potion(self, potion, popup):
+        gs = self._gs
+        try:
+            gs.inventory.use_item(potion, gs)
+            gs.message = f'Used {potion.name}! Healed up.'
+        except ValueError as e:
+            gs.message = str(e)
+
+        gs.oxygen -= 1
+        gs.step_count += 1
+        if gs.step_count % 3 == 0:
+            gs.power -= 1
+
+        if gs.oxygen <= 0:
+            gs.message = 'You suffocated!'
+            play_sound('lose')
+            self._sync_hud()
+            popup.dismiss()
+            end = self.manager.get_screen('end')
+            end.result = 'GAME OVER: You suffocated.'
+            self.manager.current = 'end'
+            return
+
+        if random.randint(1, 10) == 1:
+            popup.dismiss()
+            self._trigger_hazard()
+            return
+
+        self._sync_hud()
+        self._populate_inventory(popup)
 
     def do_save(self):
         gs = self._gs

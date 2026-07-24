@@ -94,6 +94,9 @@ class GameState(EventDispatcher):
         self.killed_enemies = data.get('killed_enemies', [])
         return True
 
+    def heal_health(self, amount):
+        self.health = min(100, self.health + amount)
+
     @classmethod
     def has_save(cls):
         return os.path.exists(cls.get_save_path())

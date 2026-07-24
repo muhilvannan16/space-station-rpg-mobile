@@ -10,7 +10,8 @@ from core.sprites import (
 )
 from core.camera import compute_camera
 from core.sounds import play_sound
-from screens.game_screen import MapGrid, VIEW_W, VIEW_H
+from screens.game_screen import MapGrid, VIEW_W, VIEW_H, InventoryPopup
+from pygamelogic import Potion, Weapon, Armor
 
 
 # Each step has a type (event key) and instruction text shown to the player.
@@ -22,6 +23,10 @@ TUTORIAL_STEPS = [
     {
         'type': 'pickup',
         'instruction': 'Walk onto the Medkit to pick it up.',
+    },
+    {
+        'type': 'use_item',
+        'instruction': 'Open your Items and use the Medkit to heal!',
     },
     {
         'type': 'refill_o2',
@@ -267,6 +272,91 @@ class TutorialScreen(Screen):
         self.power = gs.power
         self.health = gs.health
         self.message = gs.message
+
+    # ------------------------------------------------------------------
+    # Inventory (simplified — no turn cost)
+    # ------------------------------------------------------------------
+    def open_inventory(self):
+        gs = self._gs
+        if gs is None:
+            return
+        popup = InventoryPopup()
+        self._populate_inventory(popup)
+        popup.open()
+
+    def _populate_inventory(self, popup):
+        from kivy.uix.boxlayout import BoxLayout
+        from kivy.uix.label import Label
+        from kivy.uix.button import Button
+
+        item_list = popup.ids.get('item_list')
+        if item_list is None:
+            return
+        item_list.clear_widgets()
+
+        items = self._gs.inventory.get_items()
+        if not items:
+            lbl = Label(
+                text='Inventory is empty.',
+                font_size='14sp',
+                color=(0.5, 0.5, 0.5, 1),
+                size_hint_y=None,
+                height=40,
+            )
+            item_list.add_widget(lbl)
+            return
+
+        for item in items:
+            row = BoxLayout(
+                orientation='horizontal',
+                size_hint_y=None,
+                height=50,
+                spacing=10,
+            )
+
+            if isinstance(item, Potion):
+                desc = f'{item.name}  —  Potion, heals: {item.heal_amount}'
+            elif isinstance(item, Weapon):
+                desc = f'{item.name}  —  Weapon, damage: {item.damage}'
+            elif isinstance(item, Armor):
+                desc = f'{item.name}  —  Armor, defense: {item.defense}'
+            else:
+                desc = f'{item.name}  —  Key item'
+
+            lbl = Label(
+                text=desc,
+                font_size='13sp',
+                color=(1, 1, 1, 1),
+                halign='left',
+                valign='middle',
+                text_size=(None, None),
+            )
+            lbl.bind(size=lambda w, s: setattr(w, 'text_size', s))
+            row.add_widget(lbl)
+
+            if isinstance(item, Potion):
+                btn = Button(
+                    text='Use',
+                    font_size='13sp',
+                    size_hint_x=0.25,
+                    bold=True,
+                )
+                btn.bind(on_press=lambda inst, p=item, pop=popup: self.use_potion(p, pop))
+                row.add_widget(btn)
+
+            item_list.add_widget(row)
+
+    def use_potion(self, potion, popup):
+        gs = self._gs
+        try:
+            gs.inventory.use_item(potion, gs)
+            gs.message = f'Used {potion.name}! Healed up.'
+            popup.dismiss()
+            self._check_step('use_item')
+        except ValueError as e:
+            gs.message = str(e)
+            self._populate_inventory(popup)
+        self._sync_hud()
 
     # ------------------------------------------------------------------
     # Skip / exit

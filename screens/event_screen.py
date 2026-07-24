@@ -4,6 +4,8 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.properties import StringProperty
 
+from core.events import apply_effects
+
 
 class EventScreen(Screen):
     description = StringProperty('')
@@ -28,17 +30,13 @@ class EventScreen(Screen):
                 height=60,
                 font_size='14sp',
             )
-            damage = choice['damage']
-            btn.bind(on_press=lambda inst, d=damage: self.choose(d))
+            effects = choice['effects']
+            btn.bind(on_press=lambda inst, e=effects: self.choose(e))
             btn_box.add_widget(btn)
 
-    def choose(self, damage):
+    def choose(self, effects):
         gs = self.manager.app.game_state
-        gs.health -= damage
-        if damage > 0:
-            gs.message = f'You took {damage} damage from the hazard!'
-        else:
-            gs.message = 'You handled the hazard safely!'
+        gs.message = apply_effects(gs, effects)
 
         if gs.health <= 0:
             end = self.manager.get_screen('end')
