@@ -44,10 +44,12 @@ jobs:
           KEYSTORE_B64: ${{ secrets.DEBUG_KEYSTORE_B64 }}
         run: |
           mkdir -p ~/.android
+          mkdir -p ~/.config/.android
           if [ -n "$KEYSTORE_B64" ]; then
             echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
-            echo "Keystore restored:"
-            ls -la ~/.android/debug.keystore
+            echo "$KEYSTORE_B64" | base64 -d > ~/.config/.android/debug.keystore
+            echo "Keystore restored to both locations:"
+            ls -la ~/.android/debug.keystore ~/.config/.android/debug.keystore
           else
             echo "WARNING: DEBUG_KEYSTORE_B64 secret is empty or not set!"
           fi
