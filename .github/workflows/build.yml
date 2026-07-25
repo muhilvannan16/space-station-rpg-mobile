@@ -54,6 +54,10 @@ jobs:
 
       - name: Build with Buildozer
         run: buildozer android debug
+      
+      - name: Find all debug keystores on the system
+        run: |
+          find / -iname "debug.keystore" 2>/dev/null
 
       - name: Check keystore state after build
         run: |
