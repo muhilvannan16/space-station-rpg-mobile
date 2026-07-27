@@ -27,6 +27,19 @@ def _item_to_dict(item):
     return None
 
 
+def _map_item_to_dict(pos, item):
+    """Serialize an inventory item with its map position.
+
+    Renames 'item_type' to 'type' so the dict matches the format
+    expected by build_map_from_data (same as station.json).
+    """
+    d = _item_to_dict(item)
+    if d is not None:
+        d['type'] = d.pop('item_type')
+        d['y'], d['x'] = pos
+    return d
+
+
 def _item_from_dict(spec):
     """Reconstruct an inventory item from a serialized dict."""
     from core.map_loader import KeyItem
@@ -66,6 +79,8 @@ class GameState(EventDispatcher):
         self.rows = []
         self.active_items = {}
         self.active_enemies = {}
+        self.template_items = {}
+        self.template_enemies = {}
         self.picked_up_items = []
         self.killed_enemies = []
 
@@ -78,6 +93,20 @@ class GameState(EventDispatcher):
         self.step_count = 0
         self.message = ''
         self.inventory = InventorySystem(capacity=10)
+        self.template_items = {}
+        self.template_enemies = {}
+        self.picked_up_items = []
+        self.killed_enemies = []
+
+    def set_map(self, rows, items, enemies, start_y, start_x):
+        """Apply a generated or loaded map to the game state."""
+        self.rows = rows
+        self.template_items = dict(items)
+        self.template_enemies = dict(enemies)
+        self.active_items = dict(items)
+        self.active_enemies = dict(enemies)
+        self.player_y = start_y
+        self.player_x = start_x
         self.picked_up_items = []
         self.killed_enemies = []
 
@@ -102,6 +131,11 @@ class GameState(EventDispatcher):
             'picked_up_items': self.picked_up_items,
             'killed_enemies': self.killed_enemies,
             'inventory': [d for d in (_item_to_dict(i) for i in self.inventory.get_items()) if d is not None],
+            'map': {
+                'rows': self.rows,
+                'items': [d for d in (_map_item_to_dict(pos, item) for pos, item in self.template_items.items()) if d is not None],
+                'enemies': [{'name': e.name, 'health': e.health, 'damage': e.damage, 'y': pos[0], 'x': pos[1]} for pos, e in self.template_enemies.items()],
+            },
         }
         with open(path, 'w') as f:
             json.dump(data, f)
@@ -124,6 +158,16 @@ class GameState(EventDispatcher):
             item = _item_from_dict(spec)
             if item is not None:
                 self.inventory.add_item(item)
+        # Restore map from save data
+        from core.map_loader import build_map_from_data
+        map_data = data.get('map')
+        if map_data:
+            rows, items, enemies = build_map_from_data(map_data)
+            self.rows = rows
+            self.template_items = dict(items)
+            self.template_enemies = dict(enemies)
+            self.active_items = dict(items)
+            self.active_enemies = dict(enemies)
         # Remove already-picked-up items
         for pos in data.get('picked_up_items', []):
             key = (pos[0], pos[1])

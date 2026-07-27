@@ -22,15 +22,16 @@ class KeyItem:
         return self.name
 
 
-def load_map(filepath):
-    """Load map JSON and return rows, active_items dict, active_enemies dict."""
-    with open(filepath, 'r') as f:
-        game_map = json.load(f)
+def build_map_from_data(game_map):
+    """Build rows, active_items, active_enemies from a map data dict.
 
+    Works with both JSON-loaded maps and procedurally generated dicts.
+    Expected keys: 'rows', 'items', 'enemies'.
+    """
     rows = game_map['rows']
 
     active_items = {}
-    for entry in game_map['items']:
+    for entry in game_map.get('items', []):
         position = (entry['y'], entry['x'])
         if entry['type'] == 'potion':
             active_items[position] = Potion(
@@ -54,10 +55,17 @@ def load_map(filepath):
             )
 
     active_enemies = {}
-    for entry in game_map['enemies']:
+    for entry in game_map.get('enemies', []):
         pos = (entry['y'], entry['x'])
         active_enemies[pos] = Enemy(
             entry['name'], entry['health'], entry['damage']
         )
 
     return rows, active_items, active_enemies
+
+
+def load_map(filepath):
+    """Load map JSON and return rows, active_items dict, active_enemies dict."""
+    with open(filepath, 'r') as f:
+        game_map = json.load(f)
+    return build_map_from_data(game_map)

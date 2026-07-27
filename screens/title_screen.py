@@ -1,4 +1,3 @@
-import os
 from kivy.uix.screenmanager import Screen
 from kivy.properties import BooleanProperty
 from core.game_state import GameState
@@ -14,13 +13,17 @@ class TitleScreen(Screen):
         GameState.delete_save()
         app = self.manager.app
         app.game_state.reset()
-        app.init_map()
+        from core.map_generator import generate_map
+        from core.map_loader import build_map_from_data
+        map_data = generate_map()
+        rows, items, enemies = build_map_from_data(map_data)
+        app.game_state.set_map(rows, items, enemies,
+                               map_data['start_y'], map_data['start_x'])
         self.manager.current = 'game'
 
     def continue_game(self):
         app = self.manager.app
         app.game_state.reset()
-        app.init_map()
         app.game_state.load_game()
         self.manager.current = 'game'
 
