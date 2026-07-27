@@ -113,15 +113,10 @@
                 size_hint_x: 0.25
                 on_press: root.open_inventory()
             Button:
-                text: 'Save'
+                text: 'Menu'
                 font_size: '12sp'
                 size_hint_x: 0.25
-                on_press: root.do_save()
-            Button:
-                text: 'Exit'
-                font_size: '12sp'
-                size_hint_x: 0.25
-                on_press: root.open_exit_confirm()
+                on_press: root.open_menu()
 
         # Map container
         BoxLayout:
@@ -373,41 +368,31 @@
             on_press: root.dismiss()
 
 
-# --- Exit Confirm Popup ---
-<ExitConfirmPopup>:
-    title: 'Exit to Menu'
+# --- Menu Popup ---
+<MenuPopup>:
+    title: 'Menu'
     title_color: 0, 1, 1, 1
     title_size: '18sp'
-    size_hint: 0.75, 0.4
+    size_hint: 0.75, 0.5
     separator_color: 0, 1, 1, 1
     background_color: 0.08, 0.08, 0.15, 1
 
     BoxLayout:
         orientation: 'vertical'
-        spacing: 15
+        spacing: 12
         padding: 15
-
-        Label:
-            text: 'Exit to the main menu? Your progress will be saved automatically.'
+        Button:
+            id: save_btn
+            text: 'Save'
             font_size: '14sp'
-            color: 1, 1, 1, 1
-            text_size: self.size
-            halign: 'center'
-            valign: 'middle'
-            size_hint_y: 0.5
-
-        BoxLayout:
-            spacing: 15
-            size_hint_y: None
-            height: 50
-            Button:
-                id: confirm_btn
-                text: 'Confirm Exit'
-                font_size: '14sp'
-            Button:
-                id: cancel_btn
-                text: 'Cancel'
-                font_size: '14sp'
+        Button:
+            id: exit_btn
+            text: 'Exit to Menu'
+            font_size: '14sp'
+        Button:
+            id: cancel_btn
+            text: 'Cancel'
+            font_size: '14sp'
 
 
 # --- Tutorial Screen ---
