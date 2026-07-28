@@ -38,7 +38,7 @@ def apply_effects(gs, effects):
 
     if 'health' in effects:
         delta = effects['health']
-        gs.health += delta
+        gs.health = max(0, min(100, gs.health + delta))   # was: gs.health += delta
         if delta < 0:
             parts.append(f'You took {-delta} damage!')
         elif delta > 0:

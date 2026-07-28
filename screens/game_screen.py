@@ -47,12 +47,14 @@ class MapGrid(GridLayout):
                 self.add_widget(img)
                 self.tile_widgets[(vy, vx)] = img
 
-    def update_tile(self, vy, vx, sprite_path):
+    def update_tile(self, vy, vx, sprite_path, dim=False):
         """Set the sprite at viewport-relative position (vy, vx)."""
         key = (vy, vx)
         if key in self.tile_widgets:
-            self.tile_widgets[key].source = sprite_path
-            self.tile_widgets[key].reload()
+            img = self.tile_widgets[key]
+            img.source = sprite_path
+            img.reload()
+            img.color = (0.15, 0.15, 0.15, 1) if dim else (1, 1, 1, 1)
 
 
 class InventoryPopup(Popup):
@@ -128,7 +130,8 @@ class GameScreen(Screen):
                     char = gs.rows[wy][wx]
                     sprite = SPRITE_MAP.get(char, SPRITE_MAP['.'])
 
-                mg.update_tile(vy, vx, sprite)
+                dim = gs.power == 0 and max(abs(wy - gs.player_y), abs(wx - gs.player_x)) > 2
+                mg.update_tile(vy, vx, sprite, dim=dim)
 
     # --- Movement (called by D-pad buttons) ---
     def move_player(self, dx, dy):
@@ -175,7 +178,9 @@ class GameScreen(Screen):
         gs.oxygen -= 1
         gs.step_count += 1
         if gs.step_count % 3 == 0:
-            gs.power -= 1
+            gs.power = max(0, gs.power - 1)
+            if gs.power == 0:
+                gs.message = 'Power failure! Lights are out.'
 
         # Tile effects (may end the game)
         if self._check_tile_effects():
@@ -327,7 +332,9 @@ class GameScreen(Screen):
         gs.oxygen -= 1
         gs.step_count += 1
         if gs.step_count % 3 == 0:
-            gs.power -= 1
+            gs.power = max(0, gs.power - 1)
+            if gs.power == 0:
+                gs.message = 'Power failure! Lights are out.'
 
         if gs.oxygen <= 0:
             gs.message = 'You suffocated!'
