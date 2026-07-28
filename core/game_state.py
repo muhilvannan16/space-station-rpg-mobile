@@ -65,12 +65,15 @@ class Enemy:
 
 class GameState(EventDispatcher):
     """Centralized game state shared across all screens."""
+    TOTAL_SECTORS = 4
+
     player_y = NumericProperty(5)
     player_x = NumericProperty(10)
     oxygen = NumericProperty(100)
     power = NumericProperty(100)
     health = NumericProperty(100)
     step_count = NumericProperty(0)
+    current_sector = NumericProperty(1)
     message = StringProperty('')
 
     def __init__(self, **kwargs):
@@ -91,6 +94,7 @@ class GameState(EventDispatcher):
         self.power = 100
         self.health = 100
         self.step_count = 0
+        self.current_sector = 1
         self.message = ''
         self.inventory = InventorySystem(capacity=10)
         self.template_items = {}
@@ -109,6 +113,17 @@ class GameState(EventDispatcher):
         self.player_x = start_x
         self.picked_up_items = []
         self.killed_enemies = []
+        
+    def advance_sector(self):
+        """Move to the next sector: fresh map, refill life support, keep HP/inventory."""
+        from core.map_generator import generate_map
+        from core.map_loader import build_map_from_data
+        self.current_sector += 1
+        map_data = generate_map()
+        rows, items, enemies = build_map_from_data(map_data)
+        self.set_map(rows, items, enemies, map_data['start_y'], map_data['start_x'])
+        self.oxygen = 100
+        self.power = 100
 
     # --- Save / Load ---
     @staticmethod
