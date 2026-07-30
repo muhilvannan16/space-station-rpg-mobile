@@ -13,9 +13,10 @@ class TitleScreen(Screen):
         GameState.delete_save()
         app = self.manager.app
         app.game_state.reset()
-        from core.map_generator import generate_map
+        from core.map_generator import generate_map, sector_difficulty
         from core.map_loader import build_map_from_data
-        map_data = generate_map()
+        params = sector_difficulty(1)
+        map_data = generate_map(**params)
         rows, items, enemies = build_map_from_data(map_data)
         app.game_state.set_map(rows, items, enemies,
                                map_data['start_y'], map_data['start_x'])
