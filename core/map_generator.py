@@ -28,6 +28,33 @@ ENEMY_POOL = [
     {'name': 'Void Wraith', 'health': 60, 'damage': 18},
 ]
 
+# Enemy names grouped by tier, unlocked cumulatively as sectors progress.
+SECTOR_ENEMY_UNLOCKS = [
+    ['Mutant Rat', 'Rogue Drone'],           # sector 1
+    ['Rogue AI Drone', 'Alien Creature'],    # sector 2 adds these
+    ['Sentry Turret'],                       # sector 3 adds this
+    ['Void Wraith'],                         # sector 4 adds this
+]
+
+
+def sector_difficulty(sector):
+    """Return generate_map() kwargs scaled for the given sector (1-indexed).
+
+    Enemy variety unlocks cumulatively — later sectors keep weaker enemies
+    in the mix while adding tougher ones, so the average difficulty rises
+    without early-game enemies disappearing entirely. Room and enemy counts
+    also grow slightly each sector.
+    """
+    unlocked_names = set()
+    for tier in SECTOR_ENEMY_UNLOCKS[:sector]:
+        unlocked_names.update(tier)
+    enemy_pool = [e for e in ENEMY_POOL if e['name'] in unlocked_names]
+
+    return {
+        'num_rooms_range': (6 + sector, 9 + sector),
+        'num_enemies_range': (4 + sector, 6 + sector),
+        'enemy_pool': enemy_pool,
+    }
 
 def _rooms_overlap(r1, r2):
     """Check if two rooms overlap (with 1-tile padding)."""
@@ -35,7 +62,8 @@ def _rooms_overlap(r1, r2):
                 r1['y2'] + 1 < r2['y1'] or r2['y2'] + 1 < r1['y1'])
 
 
-def generate_map(seed=None):
+def generate_map(seed=None, num_rooms_range=(6, 9), num_items_range=(5, 7),
+                  num_enemies_range=(4, 6), enemy_pool=None):
     """Generate a random station map.
 
     Returns a dict with keys: 'rows', 'items', 'enemies', 'start_y', 'start_x'.
@@ -44,12 +72,14 @@ def generate_map(seed=None):
     if seed is None:
         seed = _random_module.randint(0, 2**31 - 1)
     rng = _random_module.Random(seed)
+    if enemy_pool is None:
+        enemy_pool = ENEMY_POOL
 
     # Initialize grid with walls
     grid = [['#'] * MAP_W for _ in range(MAP_H)]
 
     # --- Place rooms ---
-    target_rooms = rng.randint(6, 9)
+    target_rooms = rng.randint(*num_rooms_range)
     rooms = []
 
     for _ in range(target_rooms):
@@ -180,7 +210,7 @@ def generate_map(seed=None):
     used_rooms = {0, len(rooms) - 1, keycard_room_idx}
     available_rooms = [i for i in range(len(rooms)) if i not in used_rooms]
 
-    num_items = rng.randint(5, 7)
+    num_items = rng.randint(*num_items_range)
     selected_items = rng.sample(ITEM_POOL, min(num_items, len(ITEM_POOL)))
     rng.shuffle(available_rooms)
 
@@ -199,8 +229,8 @@ def generate_map(seed=None):
     enemy_available = [i for i in range(len(rooms)) if i not in {0, len(rooms) - 1}]
     rng.shuffle(enemy_available)
 
-    num_enemies = rng.randint(4, 6)
-    selected_enemies = rng.choices(ENEMY_POOL, k=num_enemies)
+    num_enemies = rng.randint(*num_enemies_range)
+    selected_enemies = rng.choices(enemy_pool, k=num_enemies)
 
     enemies_list = []
     for idx, enemy_template in enumerate(selected_enemies):
