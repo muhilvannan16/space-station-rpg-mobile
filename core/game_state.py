@@ -116,10 +116,11 @@ class GameState(EventDispatcher):
         
     def advance_sector(self):
         """Move to the next sector: fresh map, refill life support, keep HP/inventory."""
-        from core.map_generator import generate_map
+        from core.map_generator import generate_map, sector_difficulty
         from core.map_loader import build_map_from_data
         self.current_sector += 1
-        map_data = generate_map()
+        params = sector_difficulty(self.current_sector)
+        map_data = generate_map(**params)
         rows, items, enemies = build_map_from_data(map_data)
         self.set_map(rows, items, enemies, map_data['start_y'], map_data['start_x'])
         self.oxygen = 100
@@ -142,6 +143,7 @@ class GameState(EventDispatcher):
             'oxygen': self.oxygen,
             'power': self.power,
             'step_count': self.step_count,
+            'current_sector': self.current_sector,
             'health': self.health,
             'picked_up_items': self.picked_up_items,
             'killed_enemies': self.killed_enemies,
@@ -166,6 +168,7 @@ class GameState(EventDispatcher):
         self.oxygen = data['oxygen']
         self.power = data['power']
         self.step_count = data['step_count']
+        self.current_sector = data.get('current_sector', 1)
         self.health = data['health']
         # Restore inventory
         self.inventory = InventorySystem(capacity=10)
