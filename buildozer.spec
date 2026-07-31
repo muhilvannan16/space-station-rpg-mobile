@@ -5,7 +5,7 @@ package.domain = com.muhilvannan16
 source.dir = .
 source.include_exts = py,png,jpg,kv,json,ttf,ogg
 version = 1.0.0
-requirements = python3,kivy,pygamelogic
+requirements = python3==3.11.9,kivy,pygamelogic
 orientation = portrait
 fullscreen = 1
 # icon.filename = %(source.dir)s/assets/images/icon.png
