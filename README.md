@@ -56,7 +56,7 @@ Built by [muhilvannan16](https://github.com/muhilvannan16).
 
 All Rights Reserved.
 
-Copyright © 2026 Muhil Vannan. All rights reserved.
+Copyright © 2026 Muhilvannan Elavazhagan. All rights reserved.
 
 This source code is made available for viewing purposes only. No part of
 this software may be copied, modified, distributed, or used in any form
