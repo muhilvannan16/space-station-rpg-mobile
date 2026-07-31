@@ -4,7 +4,9 @@ from kivy.properties import StringProperty, NumericProperty
 from kivy.clock import Clock
 from kivy.animation import Animation
 
-from core.combat import get_weapon_damage, get_armor_defense, calc_damage
+from core.combat import get_weapon_damage, get_armor_defense, calc_damage, roll_boss_reward, get_boss_attacks
+from core.game_state import Boss
+from core.events import apply_effects
 from core.sounds import play_sound
 
 
@@ -60,17 +62,42 @@ class CombatScreen(Screen):
             gs.killed_enemies.append(list(self.enemy_pos))
             gs.message = f'Defeated the {self.enemy.name}!'
             self.enemy_killed = True
+            if isinstance(self.enemy, Boss):
+                reward = roll_boss_reward()
+                reward_msg = apply_effects(gs, reward)
+                self.message += f'  {reward_msg}'
+                gs.message += f'  {reward_msg}'
             Clock.schedule_once(self._return_to_game, 1.0)
             return
 
+        # Boss phase transition check (only relevant if boss survived the hit)
+        if isinstance(self.enemy, Boss):
+            transition = self.enemy.check_phase_transition()
+            if transition and transition.get('message'):
+                self.message += f'  {transition["message"]}'
+
         # Enemy attacks back
-        actual = calc_damage(self.enemy.damage, self.defense)
-        gs.health -= actual
-        self.player_hp = max(0, gs.health)
-        self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
-        self._flash(self.ids.player_hp_label)
-        play_sound('hit')
-        self.message += f'  {self.enemy.name} hits for {actual}!'
+        if isinstance(self.enemy, Boss):
+            hits = get_boss_attacks(self.enemy, self.defense)
+            total = sum(hits)
+            for i, dmg in enumerate(hits):
+                gs.health -= dmg
+                self._spawn_damage_number(f'-{dmg}', 0.25, 0.8 - i * 0.15)
+            self.player_hp = max(0, gs.health)
+            self._flash(self.ids.player_hp_label)
+            play_sound('hit')
+            if len(hits) > 1:
+                self.message += f'  {self.enemy.name} strikes {len(hits)}x for {total} total!'
+            else:
+                self.message += f'  {self.enemy.name} hits for {total}!'
+        else:
+            actual = calc_damage(self.enemy.damage, self.defense)
+            gs.health -= actual
+            self.player_hp = max(0, gs.health)
+            self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
+            self._flash(self.ids.player_hp_label)
+            play_sound('hit')
+            self.message += f'  {self.enemy.name} hits for {actual}!'
 
         if gs.health <= 0:
             self._combat_over = True
@@ -82,13 +109,24 @@ class CombatScreen(Screen):
             return
 
         gs = self._gs
-        actual = calc_damage(self.enemy.damage, self.defense)
-        gs.health -= actual
-        self.player_hp = max(0, gs.health)
-        self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
-        self._flash(self.ids.player_hp_label)
-        play_sound('hit')
-        gs.message = f'Fled from the {self.enemy.name}!'
+        if isinstance(self.enemy, Boss):
+            hits = get_boss_attacks(self.enemy, self.defense)
+            total = sum(hits)
+            for i, dmg in enumerate(hits):
+                gs.health -= dmg
+                self._spawn_damage_number(f'-{dmg}', 0.25, 0.8 - i * 0.15)
+            self.player_hp = max(0, gs.health)
+            self._flash(self.ids.player_hp_label)
+            play_sound('hit')
+            gs.message = f'Fled from the {self.enemy.name}! Took {total} damage!'
+        else:
+            actual = calc_damage(self.enemy.damage, self.defense)
+            gs.health -= actual
+            self.player_hp = max(0, gs.health)
+            self._spawn_damage_number(f'-{actual}', 0.25, 0.8)
+            self._flash(self.ids.player_hp_label)
+            play_sound('hit')
+            gs.message = f'Fled from the {self.enemy.name}!'
 
         if gs.health <= 0:
             self._combat_over = True

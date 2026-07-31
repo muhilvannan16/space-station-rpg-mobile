@@ -61,6 +61,38 @@ class Enemy:
         self.name = name
         self.health = health
         self.damage = damage
+        
+class Boss(Enemy):
+    """A multi-phase enemy. `phases` is a list of dicts, ordered from full
+    health to lowest health, each with:
+        'threshold': HP fraction (0-1) at or below which this phase begins
+        'attacks_per_turn': how many times it attacks in a single turn
+        'damage_mult': multiplier applied to self.damage for this phase
+        'message': text shown once, the turn this phase begins (or None)
+    Phase 0 must have threshold=1.0 (active from full health).
+    """
+    def __init__(self, name, health, damage, phases):
+        super().__init__(name, health, damage)
+        self.max_health = health
+        self.phases = phases
+        self.phase_index = 0
+
+    def current_phase(self):
+        return self.phases[self.phase_index]
+
+    def check_phase_transition(self):
+        """Recompute which phase should be active based on current HP.
+        Returns the new phase dict if this call caused a transition,
+        otherwise None."""
+        hp_fraction = self.health / self.max_health if self.max_health else 0
+        new_index = 0
+        for i, phase in enumerate(self.phases):
+            if hp_fraction <= phase['threshold']:
+                new_index = i
+        if new_index != self.phase_index:
+            self.phase_index = new_index
+            return self.phases[new_index]
+        return None
 
 
 class GameState(EventDispatcher):
