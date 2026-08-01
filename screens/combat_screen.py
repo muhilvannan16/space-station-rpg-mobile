@@ -64,6 +64,7 @@ class CombatScreen(Screen):
             self.enemy_killed = True
             if self._is_boss_tile:
                 gs.boss_defeated = True
+                gs.current_boss = None
             else:
                 del gs.active_enemies[self.enemy_pos]
                 gs.killed_enemies.append(list(self.enemy_pos))

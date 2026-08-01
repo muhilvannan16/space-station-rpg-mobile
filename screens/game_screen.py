@@ -173,10 +173,11 @@ class GameScreen(Screen):
         # Boss tile
         if gs.rows[new_y][new_x] == 'B':
             if not gs.boss_defeated:
-                from core.bosses import get_boss_for_sector
-                boss = get_boss_for_sector(gs.current_sector)
+                if gs.current_boss is None:
+                    from core.bosses import get_boss_for_sector
+                    gs.current_boss = get_boss_for_sector(gs.current_sector)
                 combat = self.manager.get_screen('combat')
-                combat.setup(boss, (new_y, new_x), is_boss_tile=True)
+                combat.setup(gs.current_boss, (new_y, new_x), is_boss_tile=True)
                 self.manager.current = 'combat'
                 return
             # Already defeated — treat as floor, fall through

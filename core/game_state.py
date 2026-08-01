@@ -117,6 +117,7 @@ class GameState(EventDispatcher):
         self.template_items = {}
         self.template_enemies = {}
         self.boss_defeated = False
+        self.current_boss = None
         self.picked_up_items = []
         self.killed_enemies = []
 
@@ -145,6 +146,7 @@ class GameState(EventDispatcher):
         self.player_y = start_y
         self.player_x = start_x
         self.boss_defeated = False
+        self.current_boss = None
         self.picked_up_items = []
         self.killed_enemies = []
 
