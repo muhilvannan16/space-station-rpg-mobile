@@ -158,6 +158,20 @@ def generate_map(seed=None, num_rooms_range=(6, 9), num_items_range=(5, 7),
     pod_x = (last_room['x1'] + last_room['x2']) // 2
     grid[pod_y][pod_x] = 'X'
 
+    # Boss tile — try several offsets from pod center to avoid overlap
+    boss_candidates = [
+        (pod_y, min(last_room['x1'] + 1, last_room['x2'])),
+        (min(last_room['y1'] + 1, last_room['y2']), pod_x),
+        (pod_y, max(last_room['x2'] - 1, last_room['x1'])),
+        (max(last_room['y2'] - 1, last_room['y1']), pod_x),
+    ]
+    boss_y, boss_x = pod_y, last_room['x1']  # last-resort fallback
+    for cy, cx in boss_candidates:
+        if (cy, cx) != (pod_y, pod_x):
+            boss_y, boss_x = cy, cx
+            break
+    grid[boss_y][boss_x] = 'B'
+
     # --- Locked door ---
     # Build set of all room interior tiles to avoid placing door inside a room
     room_tiles = set()

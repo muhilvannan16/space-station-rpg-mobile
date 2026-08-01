@@ -128,7 +128,11 @@ class GameScreen(Screen):
                     sprite = get_item_sprite(gs.active_items[world_pos])
                 else:
                     char = gs.rows[wy][wx]
-                    sprite = SPRITE_MAP.get(char, SPRITE_MAP['.'])
+                    if char == 'B' and not gs.boss_defeated:
+                        from core.sprites import get_boss_sprite
+                        sprite = get_boss_sprite(gs.current_sector)
+                    else:
+                        sprite = SPRITE_MAP.get(char, SPRITE_MAP['.'])
 
                 dim = gs.power == 0 and max(abs(wy - gs.player_y), abs(wx - gs.player_x)) > 2
                 mg.update_tile(vy, vx, sprite, dim=dim)
@@ -165,6 +169,33 @@ class GameScreen(Screen):
                 play_sound('door_locked')
                 self._sync_hud()
                 return
+
+        # Boss tile
+        if gs.rows[new_y][new_x] == 'B':
+            if not gs.boss_defeated:
+                if gs.current_boss is None:
+                    from core.bosses import get_boss_for_sector
+                    gs.current_boss = get_boss_for_sector(gs.current_sector)
+                combat = self.manager.get_screen('combat')
+                combat.setup(gs.current_boss, (new_y, new_x), is_boss_tile=True)
+                self.manager.current = 'combat'
+                return
+            # Already defeated — treat as floor, fall through
+
+        # Escape pod gating
+        if gs.rows[new_y][new_x] == 'X':
+            if not gs.boss_defeated:
+                gs.message = 'The pod is sealed behind containment. Defeat the guardian first.'
+                play_sound('door_locked')
+                self._sync_hud()
+                return
+            from core.game_state import GameState
+            if gs.current_sector < GameState.TOTAL_SECTORS:
+                gs.advance_sector()
+                self.build_map()
+                self._sync_hud()
+                return
+            # Final sector — fall through to let _check_tile_effects() handle the win
 
         # Wall collision
         if gs.rows[new_y][new_x] == '#':

@@ -14,6 +14,7 @@ SPRITE_MAP = {
     'O': os.path.join(SPRITES_DIR, 'tile_o2.png'),
     'P': os.path.join(SPRITES_DIR, 'tile_power.png'),
     'X': os.path.join(SPRITES_DIR, 'tile_pod.png'),
+    'B': os.path.join(SPRITES_DIR, 'enemy_turret.png'),  # boss placeholder
 }
 PLAYER_SPRITE = os.path.join(SPRITES_DIR, 'player.png')
 
@@ -50,3 +51,15 @@ def get_enemy_sprite(enemy):
     return ENEMY_SPRITE_BY_NAME.get(
         enemy.name, os.path.join(SPRITES_DIR, 'enemy_drone.png')
     )
+
+
+BOSS_SPRITE_BY_SECTOR = {
+    1: os.path.join(SPRITES_DIR, 'enemy_turret.png'),
+    2: os.path.join(SPRITES_DIR, 'enemy_drone.png'),
+    3: os.path.join(SPRITES_DIR, 'enemy_alien.png'),
+    4: os.path.join(SPRITES_DIR, 'enemy_turret.png'),
+}
+
+
+def get_boss_sprite(sector):
+    return BOSS_SPRITE_BY_SECTOR.get(sector, os.path.join(SPRITES_DIR, 'enemy_turret.png'))
