@@ -225,6 +225,8 @@ class GameState(EventDispatcher):
             self.template_enemies = dict(enemies)
             self.active_items = dict(items)
             self.active_enemies = dict(enemies)
+            if 'B' not in ''.join(rows):
+                self.boss_defeated = True  # legacy save with no boss tile — treat as cleared
         # Remove already-picked-up items
         for pos in data.get('picked_up_items', []):
             key = (pos[0], pos[1])

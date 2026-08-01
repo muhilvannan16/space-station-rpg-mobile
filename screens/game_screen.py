@@ -128,9 +128,12 @@ class GameScreen(Screen):
                     sprite = get_item_sprite(gs.active_items[world_pos])
                 else:
                     char = gs.rows[wy][wx]
-                    if char == 'B' and not gs.boss_defeated:
-                        from core.sprites import get_boss_sprite
-                        sprite = get_boss_sprite(gs.current_sector)
+                    if char == 'B':
+                        if not gs.boss_defeated:
+                            from core.sprites import get_boss_sprite
+                            sprite = get_boss_sprite(gs.current_sector)
+                        else:
+                            sprite = SPRITE_MAP['.']
                     else:
                         sprite = SPRITE_MAP.get(char, SPRITE_MAP['.'])
 
