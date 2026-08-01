@@ -24,11 +24,13 @@ class CombatScreen(Screen):
         self.enemy_pos = None
         self._combat_over = False
 
-    def setup(self, enemy, pos, game_state=None, return_screen='game'):
+    def setup(self, enemy, pos, game_state=None, return_screen='game',
+              is_boss_tile=False):
         self.enemy = enemy
         self.enemy_pos = pos
         self.enemy_killed = False
         self._combat_over = False
+        self._is_boss_tile = is_boss_tile
         self._gs = game_state or self.manager.app.game_state
         self._return_screen = return_screen
 
@@ -58,10 +60,13 @@ class CombatScreen(Screen):
         if self.enemy.health <= 0:
             self._combat_over = True
             self.message = f'You defeated the {self.enemy.name}!'
-            del gs.active_enemies[self.enemy_pos]
-            gs.killed_enemies.append(list(self.enemy_pos))
             gs.message = f'Defeated the {self.enemy.name}!'
             self.enemy_killed = True
+            if self._is_boss_tile:
+                gs.boss_defeated = True
+            else:
+                del gs.active_enemies[self.enemy_pos]
+                gs.killed_enemies.append(list(self.enemy_pos))
             if isinstance(self.enemy, Boss):
                 reward = roll_boss_reward()
                 reward_msg = apply_effects(gs, reward)

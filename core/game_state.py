@@ -116,6 +116,7 @@ class GameState(EventDispatcher):
         self.active_enemies = {}
         self.template_items = {}
         self.template_enemies = {}
+        self.boss_defeated = False
         self.picked_up_items = []
         self.killed_enemies = []
 
@@ -143,9 +144,10 @@ class GameState(EventDispatcher):
         self.active_enemies = dict(enemies)
         self.player_y = start_y
         self.player_x = start_x
+        self.boss_defeated = False
         self.picked_up_items = []
         self.killed_enemies = []
-        
+
     def advance_sector(self):
         """Move to the next sector: fresh map, refill life support, keep HP/inventory."""
         from core.map_generator import generate_map, sector_difficulty
@@ -157,6 +159,7 @@ class GameState(EventDispatcher):
         self.set_map(rows, items, enemies, map_data['start_y'], map_data['start_x'])
         self.oxygen = 100
         self.power = 100
+        self.message = f'Sector {self.current_sector} reached — life support restored!'
 
     # --- Save / Load ---
     @staticmethod
@@ -177,6 +180,7 @@ class GameState(EventDispatcher):
             'step_count': self.step_count,
             'current_sector': self.current_sector,
             'health': self.health,
+            'boss_defeated': self.boss_defeated,
             'picked_up_items': self.picked_up_items,
             'killed_enemies': self.killed_enemies,
             'inventory': [d for d in (_item_to_dict(i) for i in self.inventory.get_items()) if d is not None],
@@ -202,6 +206,7 @@ class GameState(EventDispatcher):
         self.step_count = data['step_count']
         self.current_sector = data.get('current_sector', 1)
         self.health = data['health']
+        self.boss_defeated = data.get('boss_defeated', False)
         # Restore inventory
         self.inventory = InventorySystem(capacity=10)
         for spec in data.get('inventory', []):
